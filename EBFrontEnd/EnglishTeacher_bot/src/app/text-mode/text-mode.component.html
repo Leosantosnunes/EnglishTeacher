@@ -1,0 +1,12 @@
+<div class="bg-body-tertiary m-1 width-container">
+    <div class="bg-body height-window overflow-auto">
+      <div *ngFor="let chat of chats" [ngClass]="{'rounded': true, 'bg-info-subtle': chat.role === 'user', 'p-1': true}">
+        <h4 class="mb-1">{{ chat?.role }}</h4>
+        <p class="mb-5">{{ chat?.content }}</p>
+      </div>        
+    </div>
+    <div class=" bg-body p-1 mt-1 d-flex height-textarea">
+      <textarea class="form-control border-0" [(ngModel)]="textAreaValue" matInput placeholder="What's up?"></textarea>
+      <button class="btn btn-light m-1 bg-info-subtle" mat-stroked-button (click)="onSendButtonClick()">Send</button>
+    </div>
+</div>
