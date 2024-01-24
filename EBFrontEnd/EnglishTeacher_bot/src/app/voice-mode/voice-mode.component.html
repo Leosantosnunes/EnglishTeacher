@@ -1,15 +1,19 @@
 <div class="content" role="main">
 
-    <div class="row justify-content-center pt-2 pb-2">
-      <button title="Click here to start recording action" class="btn-mic w-auto" (click)="startRecording()"
-        *ngIf="!isRecording" style="margin-right: 3px;">
-        <img src="../../assets/mic.png" />
+    <div class="row justify-content-center">
+      <button title="Click here to start recording action" class="btn w-auto" (click)="startRecording()"
+        *ngIf="!isRecording" style="margin-right: 3px;">        
+        <i-tabler name="microphone" class=""></i-tabler>
       </button>
-      <button title="Click here to stop recording" class="btn-stop w-auto" (click)="stopRecording()" *ngIf="isRecording"
+      <button title="Click here to stop recording" class="btn w-auto position-relative" (click)="stopRecording()" *ngIf="isRecording"
         style="margin-right: 3px;">
-        <img src="../../assets/stop.png" />
+        <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">          
+        </span>
+        <i-tabler name="microphone"></i-tabler>
       </button>
+    </div >
+    <div >
+      <audio #audioPlayer controls style="margin: 10px;"></audio>
+      <a *ngIf="audioURL"  [href]="audioURL" download="recorded_audio.wav">Download last reecorded Audio</a>
     </div>
-    <audio #audioPlayer controls style="margin: 10px;"></audio>
-    <a *ngIf="audioURL" [href]="audioURL" download="recorded_audio.wav">Download last reecorded Audio</a>
   </div>

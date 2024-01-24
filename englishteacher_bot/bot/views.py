@@ -1,11 +1,16 @@
+import base64
 from datetime import datetime
+import wave
 from bson import ObjectId, json_util
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from pymongo import MongoClient
 from dateutil import parser
-from .utils import generate_text
+from .utils import generate_text, speechToText
+from pydub import AudioSegment
+from django.core.files.storage import default_storage
+
 
 
 
@@ -119,3 +124,31 @@ def getByDate(request):
         return Response(serialized_data)
     except Exception as e:
         return Response({"error": f"Error retrieving data: {str(e)}"}, status=500)
+
+@api_view(['POST'])
+def voice(request):
+    try:
+        audio_data = request.FILES['recording']
+        print(audio_data.name)
+        file_name = default_storage.save('C:/Users/leona/Desktop/Projects/EnglishTeacher_bot/englishteacher_bot/media/' + audio_data.name, audio_data)
+        filepath =  'C:/Users/leona/Desktop/Projects/EnglishTeacher_bot/englishteacher_bot/media/' + audio_data.name
+
+        transcript = speechToText(filepath)
+        
+        # Read the audio file content and base64 encode it
+        with open(audio_data, 'rb') as audio_file:
+            audio_content_base64 = base64.b64encode(audio_file.read()).decode('utf-8')
+
+        new_message = {
+        'role': 'user',
+        'content': audio_content_base64,
+        'content_text': transcript.text,
+        'timestamp': datetime.utcnow(),
+        }        
+        
+        collection.update_one({'_id': ObjectId(id)}, {'$push': {'chat': new_message}})
+
+        return Response({'success': True})
+
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)})

@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Chat } from '../models/chat';
 import { Observable } from 'rxjs';
@@ -15,6 +15,11 @@ export class RestDataSourceService {
   getId(body:any): Observable<Chat> {
     return this.http.post<Chat>(`${baseUrl}/initialization`,body);
   }
+
+  voice(data: any): Observable<any> {
+    // Make the HTTP post request with the specified headers
+    return this.http.post(`${baseUrl}/voice`, data);
+}
 
   chat(data: any): Observable<Chat> {
     return this.http.post(`${baseUrl}/chat`,data);
