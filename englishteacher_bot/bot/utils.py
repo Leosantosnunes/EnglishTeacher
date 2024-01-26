@@ -1,4 +1,5 @@
 
+from datetime import datetime
 from openai import OpenAI
 from django.core.files import File
 from pydub import AudioSegment
@@ -22,3 +23,14 @@ def speechToText(filepath):
         model="whisper-1", 
         file=audio_file)
     return transcript
+
+def textToSpeech(input):
+    filename = datetime.utcnow().strftime('%m%d%Y%H%M%S')
+    speech_file_path = "C:/Users/leona/Desktop/Projects/EnglishTeacher_bot/englishteacher_bot/media/generatedMedia/"+filename+".mp3"
+    response = client.audio.speech.create(
+    model="tts-1",
+    voice="alloy",
+    input=input
+)
+    response.stream_to_file(speech_file_path)
+    return filename+".mp3"

@@ -7,6 +7,7 @@ import { RestDataSourceService } from './services/rest-data-source.service';
 import { HttpClientModule } from '@angular/common/http';
 import { Subject, Subscription } from 'rxjs';
 import { TextModeComponent } from './text-mode/text-mode.component';
+import { TextService } from './services/text.service';
 
 
 
@@ -16,7 +17,7 @@ import { TextModeComponent } from './text-mode/text-mode.component';
   imports: [CommonModule, RouterOutlet,MatSidenavModule,MatFormFieldModule,HttpClientModule,TextModeComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
-  providers:[RestDataSourceService]
+  providers:[RestDataSourceService, TextService]
 })
 export class AppComponent implements OnInit, OnDestroy {
   
@@ -29,7 +30,7 @@ export class AppComponent implements OnInit, OnDestroy {
   dateId?:Date[];
   
 
-  constructor(private dataSource:RestDataSourceService){}
+  constructor(private dataSource:RestDataSourceService, private textService:TextService){}
 
   ngOnInit(): void {
     // this.subscription = this.dataSource.getId(this.body).subscribe((t)=>{
@@ -37,9 +38,11 @@ export class AppComponent implements OnInit, OnDestroy {
     // console.log(this.id);
     // })
     this.dataSource.getChat().subscribe((response)=>{
-      this.dateId = response
-      .map((item: { chat: any[]; }) => item.chat.map(chatItem => new Date(chatItem.timestamp)))
-      .flat();
+      // this.dateId = response      
+      // .map((item: { chat: any[]; }) => item.chat.map(chatItem => new Date(chatItem.timestamp)))
+      // .flat();
+      this.dateId = response      
+      .map((item: { chat: any[]; }) => new Date(item.chat[0].timestamp) );
     })
   }
 
@@ -48,15 +51,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   retrieveDataonClick(item:any): void{
-    this.dataSource.getByDate(item).subscribe((response:any) =>{
-      console.log(response)
-      this.chats = response.chat;
-      this.chats?.shift();
-      this.chatsSubject.next(this.chats!);
-      console.log(this.chats)
-    },
-    (error)=>{
-      console.error('Error', error);
-    });
+    this.textService.getDataByDate(item);
   }
 }

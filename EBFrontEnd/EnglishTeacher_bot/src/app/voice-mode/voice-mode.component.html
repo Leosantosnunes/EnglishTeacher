@@ -1,19 +1,20 @@
-<div class="content" role="main">
-
-    <div class="row justify-content-center">
+<div class="bg-body-tertiary m-1 width-container">
+    <div class="bg-body height-window overflow-auto">
+      <div *ngFor="let chat of chats" [ngClass]="{'rounded': true, 'bg-info-subtle': chat.role === 'user', 'p-1': true}">
+        <h4 class="mb-1">{{ chat?.role }}</h4>
+        <p class="mb-5">{{ chat?.content }} <audio #audioPlayer controls style="margin: 10px;"></audio></p>
+      </div>        
+    </div>
+    <div class=" bg-body p-1 mt-1 d-flex height-textarea justify-content-center">     
       <button title="Click here to start recording action" class="btn w-auto" (click)="startRecording()"
         *ngIf="!isRecording" style="margin-right: 3px;">        
-        <i-tabler name="microphone" class=""></i-tabler>
+        <i-tabler name="microphone" style="width: 50px; color: rgb(131,58,180);"></i-tabler>
       </button>
       <button title="Click here to stop recording" class="btn w-auto position-relative" (click)="stopRecording()" *ngIf="isRecording"
         style="margin-right: 3px;">
         <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">          
         </span>
-        <i-tabler name="microphone"></i-tabler>
+        <i-tabler name="microphone" style="width: 50px; color: rgb(131,58,180);"></i-tabler>
       </button>
-    </div >
-    <div >
-      <audio #audioPlayer controls style="margin: 10px;"></audio>
-      <a *ngIf="audioURL"  [href]="audioURL" download="recorded_audio.wav">Download last reecorded Audio</a>
     </div>
-  </div>
+</div>

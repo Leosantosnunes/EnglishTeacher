@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from pymongo import MongoClient
 from dateutil import parser
-from .utils import generate_text, speechToText
+from .utils import generate_text, speechToText, textToSpeech
 from pydub import AudioSegment
 from django.core.files.storage import default_storage
 
@@ -18,7 +18,7 @@ client = MongoClient("localhost", 27017)
 db = client.english_teacher
 collection = db.chat
 
-id = None
+id = "65b3df7bba6d1ab7eea9de83"
 chat_history = None
 
 @api_view(['POST'])
@@ -89,8 +89,7 @@ def chat(request):
 def get_chat(request):
     try:
         # Execute the find query with projection to include only the timestamp field
-        data = list(collection.find({}, {'chat.timestamp': 1, '_id': 0}))
-
+        data = list(collection.find({}, {'chat.timestamp': 1, '_id': 0}))        
         if data:
             return Response(data)
         else:
@@ -106,15 +105,17 @@ def getByDate(request):
         global id
         date_str = request.GET.get('date')
         date_obj = datetime.strptime(date_str, "%a %b %d %Y %H:%M:%S GMT%z (%Z)")
-
+        
         formatted_timestamp = date_obj.strftime('%m/%d/%Y %H:%M:%S')
 
         # Use projection to exclude the '_id' field
         data = collection.find_one({'chat.0.timestamp': formatted_timestamp})
+        print(formatted_timestamp)
         id = data["_id"]
         if data:
             # Convert ObjectId to string for JSON serialization
             data['_id'] = str(data['_id'])
+            
             return Response(data, status=200)
         else:
                 return Response({"error": "Chat not found"}, status=404)
@@ -128,25 +129,44 @@ def getByDate(request):
 @api_view(['POST'])
 def voice(request):
     try:
-        audio_data = request.FILES['recording']
-        print(audio_data.name)
+        audio_data = request.FILES['recording']        
         file_name = default_storage.save('C:/Users/leona/Desktop/Projects/EnglishTeacher_bot/englishteacher_bot/media/' + audio_data.name, audio_data)
         filepath =  'C:/Users/leona/Desktop/Projects/EnglishTeacher_bot/englishteacher_bot/media/' + audio_data.name
 
-        transcript = speechToText(filepath)
-        
-        # Read the audio file content and base64 encode it
-        with open(audio_data, 'rb') as audio_file:
-            audio_content_base64 = base64.b64encode(audio_file.read()).decode('utf-8')
+        transcript = speechToText(filepath)        
 
         new_message = {
         'role': 'user',
-        'content': audio_content_base64,
-        'content_text': transcript.text,
+        'content_name': audio_data.name,
+        'content': transcript.text,
         'timestamp': datetime.utcnow(),
         }        
         
         collection.update_one({'_id': ObjectId(id)}, {'$push': {'chat': new_message}})
+        
+        data = collection.find_one({'_id':ObjectId(id)})
+        result_list = []
+
+        # Iterate through the 'content' list
+        for item in data['chat']:
+            # Check if the item is a dictionary with 'user' and 'content' keys
+            if isinstance(item, dict) and 'role' in item and 'content' in item:
+                role = item['role']
+                content = item['content']
+                result_list.append({"role": role, "content": content})    
+
+        generated_text = generate_text(result_list)
+
+        speechFile = textToSpeech(generated_text)
+
+        assistant_new_message = {
+        'role': 'assistant',
+        'content': speechFile,
+        'content_text': generated_text,
+        'timestamp': datetime.utcnow(),
+        }   
+
+        collection.update_one({'_id': ObjectId(id)}, {'$push': {'chat': assistant_new_message}})
 
         return Response({'success': True})
 
