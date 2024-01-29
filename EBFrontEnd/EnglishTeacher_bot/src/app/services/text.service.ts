@@ -15,28 +15,31 @@ export class TextService {
 
   textChat(newText:any){
     this.dataSource.chat(newText).subscribe({
-      next:(response) => {      
+      next:(response) => {
       this.chats = (response.chat as { role?: string; content?: string; date?: Date }[]) || [];
       console.log(this.chats);
-      this.chats?.shift(); 
-      this.chatsSubject.next(this.chats!);     
+      this.chats?.shift();
+      //this.chatsSubject.next(this.chats!);
     },
     error: (err) => {
       console.error('Error', err)
     }});
   }
-  
+
 
   getDataByDate(item: any) {
     this.dataSource.getByDate(item).subscribe({
       next: (response) => {
-        this.chats = response.chat;
-        this.chats?.shift();
-        this.chatsSubject.next(this.chats!);
-        console.log(this.chats$);
+        // this.chats = response.chat;
+        // this.chats?.shift();
+        const chat = response.chat;
+        chat.shift()
+        console.log(chat);
+        this.chatsSubject.next(chat);
+        console.log('Observable updated:', this.chats$);
       },
       error: (err) => console.error('Error', err)
     });
   }
-  
+
 }
