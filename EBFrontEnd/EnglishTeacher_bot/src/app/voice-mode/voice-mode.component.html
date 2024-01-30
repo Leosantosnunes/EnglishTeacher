@@ -1,20 +1,26 @@
 <div class="bg-body-tertiary m-1 width-container">
     <div class="bg-body height-window overflow-auto">
       <div *ngFor="let chat of chats" [ngClass]="{'rounded': true, 'bg-info-subtle': chat.role === 'user', 'p-1': true}">
-        <h4 class="mb-1">{{ chat?.role }}</h4>
-        <p class="mb-5">{{ chat?.content }} <audio #audioPlayer controls style="margin: 10px;"></audio></p>
-      </div>        
+        <div class='d-flex justify-content-between align-items-center'>
+          <h4 class="mb-1">{{ chat?.role }}</h4>
+          <button class="btn" (click)="toggleContentVisibility()">
+            <i-tabler [name]="hideContent ? 'eye-off' : 'eye'"></i-tabler>
+          </button>
+        </div>
+        <p class="mb-5" *ngIf="!hideContent">{{ chat?.content }}</p>
+        <audio #audioPlayer controls style="margin: 10px;"><source [src]="chat.audioURL" type="audio/wav"></audio>
+      </div>
     </div>
-    <div class=" bg-body p-1 mt-1 d-flex height-textarea justify-content-center">     
+    <div class=" bg-body p-1 mt-1 d-flex height-textarea justify-content-center">
       <button title="Click here to start recording action" class="btn w-auto" (click)="startRecording()"
-        *ngIf="!isRecording" style="margin-right: 3px;">        
-        <i-tabler name="microphone" style="width: 50px; color: rgb(131,58,180);"></i-tabler>
+        *ngIf="!isRecording" style="margin-right: 3px;">
+        <i-tabler name="microphone" style="width: 50px;" class="text-info-emphasis"></i-tabler>
       </button>
       <button title="Click here to stop recording" class="btn w-auto position-relative" (click)="stopRecording()" *ngIf="isRecording"
         style="margin-right: 3px;">
-        <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">          
+        <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
         </span>
-        <i-tabler name="microphone" style="width: 50px; color: rgb(131,58,180);"></i-tabler>
+        <i-tabler name="microphone" style="width: 50px;" class="text-info-emphasis"></i-tabler>
       </button>
     </div>
 </div>

@@ -33,4 +33,4 @@ def textToSpeech(input):
     input=input
 )
     response.stream_to_file(speech_file_path)
-    return filename+".mp3"
+    return {'name':filename+".mp3", 'path': speech_file_path}

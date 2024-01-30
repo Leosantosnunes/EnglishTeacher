@@ -18,7 +18,7 @@ client = MongoClient("localhost", 27017)
 db = client.english_teacher
 collection = db.chat
 
-id = "65b3df7bba6d1ab7eea9de83"
+id = None
 chat_history = None
 
 @api_view(['POST'])
@@ -133,13 +133,17 @@ def voice(request):
         file_name = default_storage.save('C:/Users/leona/Desktop/Projects/EnglishTeacher_bot/englishteacher_bot/media/' + audio_data.name, audio_data)
         filepath =  'C:/Users/leona/Desktop/Projects/EnglishTeacher_bot/englishteacher_bot/media/' + audio_data.name
 
-        transcript = speechToText(filepath)        
+        transcript = speechToText(filepath) 
+
+        with open(filepath, "rb") as audio_file:
+            encoded_audio_user = base64.b64encode(audio_file.read()).decode('utf-8')       
 
         new_message = {
         'role': 'user',
         'content_name': audio_data.name,
         'content': transcript.text,
         'timestamp': datetime.utcnow(),
+        'audio_content': encoded_audio_user
         }        
         
         collection.update_one({'_id': ObjectId(id)}, {'$push': {'chat': new_message}})
@@ -159,16 +163,26 @@ def voice(request):
 
         speechFile = textToSpeech(generated_text)
 
+        with open(speechFile['path'], "rb") as audio_file:
+            encoded_audio_assistant = base64.b64encode(audio_file.read()).decode('utf-8')  
+
         assistant_new_message = {
         'role': 'assistant',
-        'content': speechFile,
-        'content_text': generated_text,
+        'content_name': speechFile['name'],
+        'content': generated_text,
         'timestamp': datetime.utcnow(),
+        'audio_content': encoded_audio_assistant
         }   
 
         collection.update_one({'_id': ObjectId(id)}, {'$push': {'chat': assistant_new_message}})
 
-        return Response({'success': True})
+        responseData = collection.find_one({'_id':ObjectId(id)})
+        if responseData:
+            # Convert ObjectId to string for JSON serialization
+            responseData['_id'] = str(responseData['_id'])
+            return Response(responseData, status=200)
+        else:
+            return Response({"error": "Chat not found"}, status=404)
 
     except Exception as e:
         return Response({'success': False, 'error': str(e)})

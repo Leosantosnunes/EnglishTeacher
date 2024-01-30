@@ -4,7 +4,7 @@ import { Chat } from '../models/chat';
 import { Subject, Subscription } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
-import { TextService } from '../services/text.service';
+import { ChatService } from '../services/chat.service';
 import { HttpClientModule } from '@angular/common/http';
 
 @Component({
@@ -23,10 +23,10 @@ export class TextModeComponent implements OnInit, OnDestroy {
   private sub = Subscription.EMPTY
 
 
-  constructor(private textService: TextService, private cd: ChangeDetectorRef){}
+  constructor(private chatService: ChatService){}
 
   ngOnInit(): void {
-    this.sub = this.textService.chats$.subscribe({
+    this.sub = this.chatService.chats$.subscribe({
       next: chat => {this.chats = chat; console.log(chat)}
     })
   }
@@ -39,7 +39,7 @@ export class TextModeComponent implements OnInit, OnDestroy {
 
     this.newText!.chat!.role = 'user';
     this.newText!.chat!.content = this.textAreaValue;
-    this.textService.textChat(this.newText)
+    this.chatService.textChat(this.newText)
     this.textAreaValue = '';
   }
 

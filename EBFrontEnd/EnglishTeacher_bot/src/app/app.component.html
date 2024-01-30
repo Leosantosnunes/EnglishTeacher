@@ -1,13 +1,15 @@
 <div class="container bg-body-tertiary">
-  <div class="bg-body-tertiary navbar"></div>
+  <div class="navbar bg-info-subtle" style="height: 50px;">
+    <mat-slide-toggle class="m-2" (change)="toggleVoiceMode()">Voice Mode <span>{{ isVoiceModeOn ? 'ON' : 'OFF' }}</span></mat-slide-toggle>
+  </div>
   <div class="d-flex flex-row">
     <div class="list-group m-1 width-side height-side bg-body overflow-auto">
       <div *ngFor="let item of dateId">
         <button href="#" class="list-group-item list-group-item-action border-0" (click)="retrieveDataonClick(item)">{{item | date:'short'}}</button>
-      </div>      
+      </div>
     </div>
     <router-outlet></router-outlet>
   </div>
 </div>
-        
+
 

@@ -7,8 +7,9 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatBadgeModule} from '@angular/material/badge';
 import { HttpClientModule } from '@angular/common/http';
 import { Chat } from '../models/chat';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { RestDataSourceService } from '../services/rest-data-source.service';
+import { ChatService } from '../services/chat.service';
 
 @Component({
   selector: 'app-voice-mode',
@@ -19,24 +20,40 @@ import { RestDataSourceService } from '../services/rest-data-source.service';
   providers:[AudioService]
 })
 export class VoiceModeComponent implements OnInit {
-  
+
+  hideContent = false;
   isRecording = false;
   audioURL: string | null = null;
-  @ViewChild('audioPlayer') audioPlayer!: ElementRef<HTMLAudioElement>;  
-  
-  chats?: { role?: string, content?: string, date?: Date }[];  
+  @ViewChild('audioPlayer') audioPlayer!: ElementRef<HTMLAudioElement>;
 
-  constructor(private audioRecordingService: AudioService, private cd: ChangeDetectorRef){}
+  chats?: { role?: string, content?: string,content_name?:string,audio_content?:string, date?: Date, audioURL?:string }[];
+  private sub = Subscription.EMPTY
+
+  constructor(private audioRecordingService: AudioService, private cd: ChangeDetectorRef, private chatService:ChatService){}
 
   ngOnInit() {
     this.audioRecordingService.audioBlob$.subscribe(blob => {
-      //this.audioURL = window.URL.createObjectURL(blob);
-      //this.audioPlayer.nativeElement.src = this.audioURL;
-      this.audioRecordingService.SendAudio(blob);
+      this.audioPlayer.nativeElement.src = this.audioURL!;
+      this.chatService.SendAudio(blob);
       this.cd.detectChanges();
     });
+    this.sub = this.chatService.chats$.subscribe({
+      next: chat => {
+        this.chats = chat;
+        console.log(this.chats)
+        this.chats.forEach(element => {
+          if(element.audio_content){
+            const audioURL = this.audioRecordingService.handleAudioContent(element.audio_content);
+            element.audioURL = audioURL;
+          }
+
+          this.cd.detectChanges();
+        });
+
+      }
+    })
   }
-  
+
   startRecording() {
     this.isRecording = true;
     this.audioRecordingService.startRecording();
@@ -45,6 +62,10 @@ export class VoiceModeComponent implements OnInit {
   stopRecording() {
     this.isRecording = false;
     this.audioRecordingService.stopRecording();
-  } 
+  }
+
+  toggleContentVisibility() {
+    this.hideContent = !this.hideContent;
+  }
 
 }

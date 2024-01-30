@@ -1,22 +1,23 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { MatSidenavModule} from '@angular/material/sidenav'
 import { MatFormFieldModule} from '@angular/material/form-field'
 import { RestDataSourceService } from './services/rest-data-source.service';
 import { HttpClientModule } from '@angular/common/http';
-import {  Subscription } from 'rxjs';
-import { TextService } from './services/text.service';
+import { Subscription } from 'rxjs';
+import { ChatService } from './services/chat.service';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 
 
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet,MatSidenavModule,MatFormFieldModule,HttpClientModule,],
+  imports: [CommonModule, RouterOutlet,MatSidenavModule,MatFormFieldModule,HttpClientModule,MatSlideToggleModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
-  providers:[RestDataSourceService, TextService]
+  providers:[RestDataSourceService, ChatService]
 })
 export class AppComponent implements OnInit, OnDestroy {
 
@@ -25,19 +26,17 @@ export class AppComponent implements OnInit, OnDestroy {
   private subscription = Subscription.EMPTY;
   id:String = ''
   dateId?:Date[];
+  isVoiceModeOn = false;
 
 
-  constructor(private dataSource:RestDataSourceService, private textService:TextService){}
+  constructor(private dataSource:RestDataSourceService, private chatService:ChatService, private router:Router){}
 
   ngOnInit(): void {
-    // this.subscription = this.dataSource.getId(this.body).subscribe((t)=>{
-    // this.id = t.id;
-    // console.log(this.id);
-    // })
+    this.subscription = this.dataSource.getId(this.body).subscribe((t)=>{
+    this.id = t.id;
+    console.log(this.id);
+    })
     this.dataSource.getChat().subscribe((response)=>{
-      // this.dateId = response
-      // .map((item: { chat: any[]; }) => item.chat.map(chatItem => new Date(chatItem.timestamp)))
-      // .flat();
       this.dateId = response
       .map((item: { chat: any[]; }) => new Date(item.chat[0].timestamp) );
     })
@@ -48,6 +47,18 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   retrieveDataonClick(item:any): void{
-    this.textService.getDataByDate(item);
+    this.chatService.getDataByDate(item);
+  }
+
+  toggleVoiceMode() {
+    // Toggle the state of the voice mode
+    this.isVoiceModeOn = !this.isVoiceModeOn;
+
+    // Navigate to the appropriate route based on the voice mode state
+    if (this.isVoiceModeOn) {
+      this.router.navigate(['/voice']);
+    } else {
+      this.router.navigate(['/text']);
+    }
   }
 }
